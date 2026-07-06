@@ -18,12 +18,7 @@ def load_pdf(pdf_path):
 # -------------------------------
 # Step 2: Build FAISS index
 # -------------------------------
-@st.cache_resource(show_spinner=False)
-def build_vector_db(pdf_path):
-    # Cached on pdf_path: this whole function (loading, chunking, embedding,
-    # and indexing) only runs once per pdf_path per app session. Later calls
-    # with the same pdf_path return the cached vectorstore instantly.
-    chunks = load_pdf(pdf_path)
+def build_vector_db(chunks):
     if not chunks:
         raise ValueError("No chunks found. Check PDF path or text extraction.")
 
@@ -57,12 +52,13 @@ def main():
     query = st.text_input("Enter your question:")
     run_button = st.button("Run", disabled=(query.strip() == ""))
 
-    pdf_path = "Computer_networking.pdf"  # Replace with your PDF file
-
     if run_button:
-        with st.spinner("Loading PDF and building index (first time only)..."):
-            vectorstore = build_vector_db(pdf_path)
-
+        with st.spinner("Embedding the query..."):
+        # Load PDF and build vector DB once
+            pdf_path = "Computer_Networking.pdf"  # Replace with your PDF file
+            chunks = load_pdf(pdf_path)
+            vectorstore = build_vector_db(chunks)
+        
         with st.spinner("Generating response..."):
             answer = rag_query(vectorstore, query)
         st.subheader("Answer")
@@ -70,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
